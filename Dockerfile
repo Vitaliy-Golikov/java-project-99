@@ -1,24 +1,18 @@
-# Этап 1: Сборка проекта
-FROM gradle:8.7-jdk21 AS build
+FROM gradle:9.5.1-jdk21 AS build
 
 WORKDIR /app
 
-# Копируем все файлы проекта
-COPY . .
+# Копируем ВСЁ содержимое папки app в корень /app
+COPY app/ ./
 
-# Даем права на выполнение gradlew
 RUN chmod +x gradlew
+RUN ./gradlew bootJar -x test --no-daemon
 
-# Собираем проект
-RUN ./gradlew bootJar --no-daemon -x test
-
-# Этап 2: Запуск приложения
 FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-# Копируем JAR из этапа сборки
-COPY --from=build /app/app/build/libs/*.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
