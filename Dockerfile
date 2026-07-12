@@ -2,17 +2,9 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-# Копируем все файлы проекта (включая gradlew и gradle)
-COPY . .
+# Копируем собранный JAR (если вы собрали локально)
+COPY app/build/libs/*.jar app.jar
 
-# Даем права на выполнение gradlew
-RUN chmod +x gradlew
-
-# Собираем проект
-RUN ./gradlew clean build -x test
-
-# Открываем порт
 EXPOSE 8080
 
-# Запускаем приложение
-ENTRYPOINT ["java", "-jar", "build/libs/*.jar"]
+CMD ["java", "-jar", "app.jar"]
