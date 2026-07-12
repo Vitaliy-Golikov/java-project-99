@@ -2,7 +2,7 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-# Копируем все файлы проекта
+# Копируем все файлы проекта (включая gradlew и gradle)
 COPY . .
 
 # Даем права на выполнение gradlew
