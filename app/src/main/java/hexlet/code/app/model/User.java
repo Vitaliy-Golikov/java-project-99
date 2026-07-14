@@ -3,9 +3,9 @@ package hexlet.code.app.model;
 import java.time.LocalDate;
 import jakarta.persistence.*;
 import static jakarta.persistence.GenerationType.IDENTITY;
+
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Email;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,22 +16,18 @@ import org.springframework.data.annotation.LastModifiedDate;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public class User {
+public class User implements BaseEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @NotBlank
     private String firstName;
 
-    @NotBlank
     private String lastName;
 
-    @Email
     @Column(unique = true)
     private String email;
 
-    @NotBlank
     private String password;
 
     @CreatedDate

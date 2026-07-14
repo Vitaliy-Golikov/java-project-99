@@ -4,8 +4,11 @@
     <annotationProcessing>
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
+        <option name="mapstruct.defaultComponentModel" value="spring" />
         <processorPath useClasspath="false">
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.46/a5cfe99fdf320e84955ef653f2ce1bf789d11385/lombok-1.18.46.jar" />
+          <entry name="$PROJECT_DIR$/../java-project-78/app/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.46/a5cfe99fdf320e84955ef653f2ce1bf789d11385/lombok-1.18.46.jar" />
+          <entry name="$PROJECT_DIR$/../java-project-78/app/.gradle/caches/modules-2/files-2.1/org.mapstruct/mapstruct-processor/1.6.3/52e345c907fbf173b376586c7f8b131d53fa5867/mapstruct-processor-1.6.3.jar" />
+          <entry name="$PROJECT_DIR$/../java-project-78/app/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok-mapstruct-binding/0.2.0/2f1cf9ced7b720ba4996c942b816669e63f0fa4f/lombok-mapstruct-binding-0.2.0.jar" />
         </processorPath>
         <module name="app.main" />
       </profile>
@@ -13,9 +16,9 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="app" options="-parameters" />
-      <module name="app.main" options="-parameters" />
-      <module name="app.test" options="-parameters" />
+      <module name="app" options="-parameters -Amapstruct.defaultComponentModel=spring" />
+      <module name="app.main" options="-parameters -Amapstruct.defaultComponentModel=spring" />
+      <module name="app.test" options="-parameters -Amapstruct.defaultComponentModel=spring" />
     </option>
   </component>
 </project>
