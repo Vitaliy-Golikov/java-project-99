@@ -31,4 +31,10 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleResourceNotFound(ResourceNotFoundException ex) {
         return Map.of("error", ex.getMessage());
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, String> handleRuntimeException(RuntimeException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 }
