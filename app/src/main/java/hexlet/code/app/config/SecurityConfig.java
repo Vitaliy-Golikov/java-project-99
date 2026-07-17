@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/login").permitAll()
                         .anyRequest().authenticated()
                 )
-                // ✅ ДОБАВИТЬ ЭТУ СТРОКУ!
+
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.decoder(jwtDecoder))
                 );

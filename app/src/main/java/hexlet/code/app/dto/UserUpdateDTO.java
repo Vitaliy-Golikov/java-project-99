@@ -4,19 +4,18 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.openapitools.jackson.nullable.JsonNullable;
+
+import java.util.Optional;
 
 @Getter
 @Setter
 public class UserUpdateDTO {
-
-    private JsonNullable<String> firstName;
-
-    private JsonNullable<String> lastName;
+    private Optional<String> firstName = Optional.empty();
+    private Optional<String> lastName = Optional.empty();
 
     @Email
-    private JsonNullable<String> email;
+    private Optional<String> email = Optional.empty();
 
     @Size(min = 3)
-    private JsonNullable<String> password;
+    private Optional<String> password = Optional.empty();
 }

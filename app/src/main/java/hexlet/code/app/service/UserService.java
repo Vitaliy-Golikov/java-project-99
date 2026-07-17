@@ -49,11 +49,13 @@ public class UserService {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
 
-        if (userUpdateDTO.getPassword() != null && userUpdateDTO.getPassword().isPresent()) {
-            user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword().get()));
-        }
+        userUpdateDTO.getFirstName().ifPresent(user::setFirstName);
+        userUpdateDTO.getLastName().ifPresent(user::setLastName);
+        userUpdateDTO.getEmail().ifPresent(user::setEmail);
+        userUpdateDTO.getPassword().ifPresent(pass ->
+                user.setPassword(passwordEncoder.encode(pass))
+        );
 
-        userMapper.update(userUpdateDTO, user);
         userRepository.save(user);
         return userMapper.map(user);
     }
