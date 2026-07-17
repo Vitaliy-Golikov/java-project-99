@@ -27,6 +27,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("org.springframework.security:spring-security-oauth2-jose")
 	compileOnly("org.projectlombok:lombok")
+	runtimeOnly("com.h2database:h2")
 	annotationProcessor("org.projectlombok:lombok")
 	// MapStruct
 	implementation("org.mapstruct:mapstruct:1.6.3")
