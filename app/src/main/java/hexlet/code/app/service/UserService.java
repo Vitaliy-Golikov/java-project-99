@@ -7,8 +7,8 @@ import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.UserMapper;
 import hexlet.code.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -25,22 +25,21 @@ public class UserService {
     private UserMapper userMapper;
 
     public List<UserDTO> getAllUsers() {
-        var user = userRepository.findAll();
-        return user.stream()
+        return userRepository.findAll()
+                .stream()
                 .map(userMapper::map)
                 .toList();
     }
 
     public UserDTO getUserById(Long id) {
         var user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not Found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
         return userMapper.map(user);
     }
 
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         var user = userMapper.map(userCreateDTO);
-
-        user.setPassword(passwordEncoder.encode(userCreateDTO.getPassword()));
+        user.setPassword(passwordEncoder.encode(userCreateDTO.getPasswordDigest()));
         userRepository.save(user);
         return userMapper.map(user);
     }
@@ -49,16 +48,28 @@ public class UserService {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
 
+        // ✅ Правильная работа с JsonNullable
+        if (userUpdateDTO.getFirstName() != null && userUpdateDTO.getFirstName().isPresent()) {
+            user.setFirstName(userUpdateDTO.getFirstName().get());
+        }
+        if (userUpdateDTO.getLastName() != null && userUpdateDTO.getLastName().isPresent()) {
+            user.setLastName(userUpdateDTO.getLastName().get());
+        }
+        if (userUpdateDTO.getEmail() != null && userUpdateDTO.getEmail().isPresent()) {
+            user.setEmail(userUpdateDTO.getEmail().get());
+        }
         if (userUpdateDTO.getPassword() != null && userUpdateDTO.getPassword().isPresent()) {
             user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword().get()));
         }
 
-        userMapper.update(userUpdateDTO, user);
         userRepository.save(user);
         return userMapper.map(user);
     }
 
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found: " + id);
+        }
         userRepository.deleteById(id);
     }
 }
