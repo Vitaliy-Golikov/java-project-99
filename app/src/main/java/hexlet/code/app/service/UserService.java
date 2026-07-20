@@ -5,6 +5,7 @@ import hexlet.code.app.dto.UserDTO;
 import hexlet.code.app.dto.UserUpdateDTO;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.UserMapper;
+import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,9 @@ public class UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private TaskRepository taskRepository;  // ← Добавить!
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll()
@@ -48,7 +52,6 @@ public class UserService {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
 
-        // ✅ Правильная работа с JsonNullable
         if (userUpdateDTO.getFirstName() != null && userUpdateDTO.getFirstName().isPresent()) {
             user.setFirstName(userUpdateDTO.getFirstName().get());
         }
@@ -67,9 +70,13 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found: " + id);
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+
+        if (taskRepository.existsByAssigneeId(id)) {
+            throw new RuntimeException("Cannot delete user with assigned tasks");
         }
+
         userRepository.deleteById(id);
     }
 }
