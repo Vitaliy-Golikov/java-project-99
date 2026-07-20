@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class TaskCreateDTO {
@@ -18,7 +20,9 @@ public class TaskCreateDTO {
     private Integer index;
 
     @NotNull(message = "Статус обязателен")
-    private String status;  // slug статуса
+    private String status;
 
     private Long assignee_id;
+
+    private Set<Long> labelIds;
 }

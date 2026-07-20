@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/task_statuses/**").authenticated()
                         .requestMatchers("/api/tasks/**").authenticated()
+                        .requestMatchers("/api/labels/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
