@@ -2,6 +2,7 @@ package hexlet.code.app.service;
 
 import hexlet.code.app.dto.TaskCreateDTO;
 import hexlet.code.app.dto.TaskDTO;
+import hexlet.code.app.dto.TaskFilterDTO;
 import hexlet.code.app.dto.TaskUpdateDTO;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.TaskMapper;
@@ -24,6 +25,18 @@ public class TaskService {
 
     public List<TaskDTO> getAll() {
         return taskRepository.findAll().stream()
+                .map(taskMapper::map)
+                .collect(Collectors.toList());
+    }
+
+    public List<TaskDTO> getAllWithFilters(TaskFilterDTO filter) {
+        List<Task> tasks = taskRepository.findAllWithFilters(
+                filter.getTitleCont(),
+                filter.getAssigneeId(),
+                filter.getStatus(),
+                filter.getLabelId()
+        );
+        return tasks.stream()
                 .map(taskMapper::map)
                 .collect(Collectors.toList());
     }

@@ -17,3 +17,9 @@ spring:
 logging:
   level:
     org.hibernate.SQL: INFO
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  send-default-pii: true
+  environment: production
+  traces-sample-rate: 1.0
