@@ -43,7 +43,6 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.00.0")
 }
 
 tasks.withType<Test> {
