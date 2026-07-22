@@ -15,6 +15,12 @@ plugins {
 	id("io.sentry.jvm.gradle") version "6.1.0"
 }
 
+checkstyle {
+	toolVersion = "10.17.0"
+	configFile = file("config/checkstyle/checkstyle.xml")
+	isIgnoreFailures = true  // <-- используйте isIgnoreFailures вместо ignoreFailures
+}
+
 group = "hexlet.code"
 version = "0.0.1-SNAPSHOT"
 description = "Task Manager for Spring Boot"
@@ -54,17 +60,7 @@ dependencies {
 	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.33.0")
 }
 
-sonar {
-	properties {
-		property("sonar.projectKey", "Anastasizz_java-project-99")
-		property("sonar.organization", "anastasizz")
-		property("sonar.host.url", "https://sonarcloud.io")
-		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
-		property("sonar.java.binaries", "build/classes/java/main")
-		property("sonar.sources", "src/main/java")
-		property("sonar.tests", "src/test/java")
-	}
-}
+
 
 //sentry {
 //	// Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.

@@ -9,14 +9,14 @@
           <entry name="$PROJECT_DIR$/../java-project-78/app/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok-mapstruct-binding/0.2.0/2f1cf9ced7b720ba4996c942b816669e63f0fa4f/lombok-mapstruct-binding-0.2.0.jar" />
           <entry name="$PROJECT_DIR$/../java-project-78/app/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.38/57f8f5e02e92a30fd21b80cbd426a4172b5f8e29/lombok-1.18.38.jar" />
         </processorPath>
-        <module name="hexlet.code.app.main" />
+        <module name="app.main" />
       </profile>
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../java-project-78/app/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.38/57f8f5e02e92a30fd21b80cbd426a4172b5f8e29/lombok-1.18.38.jar" />
         </processorPath>
-        <module name="hexlet.code.app.test" />
+        <module name="app.test" />
       </profile>
     </annotationProcessing>
   </component>
@@ -25,7 +25,7 @@
       <module name="app" options="-parameters -Xlint:-processing" />
       <module name="app.main" options="-parameters -Xlint:-processing" />
       <module name="app.test" options="-parameters -Xlint:-processing" />
-      <module name="hexlet.code.app" options="-parameters -Xlint:-processing" />
+      <module name="hexlet.code" options="-parameters -Xlint:-processing" />
       <module name="hexlet.code.app.main" options="-parameters -Xlint:-processing" />
       <module name="hexlet.code.app.test" options="-parameters -Xlint:-processing" />
     </option>
