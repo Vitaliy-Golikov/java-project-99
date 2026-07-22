@@ -4,16 +4,19 @@ run-dist:
 	./build/install/java-project-99/bin/java-project-99
 
 build:
-	cd app && ./gradlew clean build
+	./gradlew clean build
 
 checkstyle:
-	cd app && ./gradlew checkstyleMain
+	./gradlew checkstyleMain
 
 test:
-	cd app && ./gradlew test
+	./gradlew test
 
 report:
-	cd app && ./gradlew jacocoTestReport
+	./gradlew jacocoTestReport
 
 lint:
-	cd app && ./gradlew checkstyleMain checkstyleTest
+	./gradlew checkstyleMain checkstyleTest
+
+setup:
+	./gradlew wrapper --gradle-version 9.5.0
