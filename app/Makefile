@@ -4,16 +4,16 @@ run-dist:
 	./build/install/java-project-99/bin/java-project-99
 
 build:
-	./gradlew clean build
+	cd app && ./gradlew clean build
 
 checkstyle:
-	./gradlew checkstyleMain
+	cd app && ./gradlew checkstyleMain
 
 test:
-	./gradlew test
+	cd app && ./gradlew test
 
 report:
-	./gradlew jacocoTestReport
+	cd app && ./gradlew jacocoTestReport
 
 lint:
-	./gradlew checkstyleMain checkstyleTest
+	cd app && ./gradlew checkstyleMain checkstyleTest
