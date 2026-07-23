@@ -22,9 +22,9 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="app" options="-parameters -Xlint:-processing" />
       <module name="app.main" options="-parameters -Xlint:-processing" />
       <module name="app.test" options="-parameters -Xlint:-processing" />
+      <module name="code" options="-parameters -Xlint:-processing" />
       <module name="hexlet.code" options="-parameters -Xlint:-processing" />
       <module name="hexlet.code.app.main" options="-parameters -Xlint:-processing" />
       <module name="hexlet.code.app.test" options="-parameters -Xlint:-processing" />
