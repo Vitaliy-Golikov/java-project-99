@@ -1,16 +1,16 @@
 .PHONY: build checkstyle test setup lint
 
 build:
-	cd app && ./gradlew clean build
+	cd code && ./gradlew clean build
 
 checkstyle:
-	cd app && ./gradlew checkstyleMain
+	cd code && ./gradlew checkstyleMain
 
 test:
-	cd app && ./gradlew test
+	cd code && ./gradlew test
 
 setup:
-	cd app && ./gradlew wrapper --gradle-version 9.5.0
+	cd code && ./gradlew wrapper --gradle-version 9.5.0
 
 lint:
-	cd app && ./gradlew checkstyleMain checkstyleTest
+	cd code && ./gradlew checkstyleMain checkstyleTest
