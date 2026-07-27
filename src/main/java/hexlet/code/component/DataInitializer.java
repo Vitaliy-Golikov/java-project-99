@@ -44,13 +44,6 @@ public class DataInitializer implements ApplicationRunner {
         userData.setPassword("qwerty");
         userService.createUser(userData);
 
-        userData = new UserCreateDTO();
-        userData.setEmail("anastasia_sviridenkova@mail.ru");
-        userData.setFirstName("Lolly");
-        userData.setLastName("Mir");
-        userData.setPassword("kittycat");
-        userService.createUser(userData);
-
         var statuses = Map.of(
                 "draft", "Draft",
                 "to_review", "Under review",
