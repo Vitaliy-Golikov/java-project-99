@@ -7,7 +7,6 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 
 	application
-	checkstyle
 	jacoco
 	id("com.github.ben-manes.versions") version "0.52.0"
 	id("org.sonarqube") version "7.2.2.6593"
@@ -54,17 +53,6 @@ dependencies {
 	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.33.0")
 }
 
-sonar {
-	properties {
-		property("sonar.projectKey", "Anastasizz_java-project-99")
-		property("sonar.organization", "anastasizz")
-		property("sonar.host.url", "https://sonarcloud.io")
-		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
-		property("sonar.java.binaries", "build/classes/java/main")
-		property("sonar.sources", "src/main/java")
-		property("sonar.tests", "src/test/java")
-	}
-}
 
 //sentry {
 //	// Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
