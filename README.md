@@ -1,5 +1,8 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/Vitaliy-Golikov/java-project-99/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Vitaliy-Golikov/java-project-99/actions)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Vitaliy-Golikov_java-project-99&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Vitaliy-Golikov_java-project-99)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Vitaliy-Golikov_java-project-99&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Vitaliy-Golikov_java-project-99)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Vitaliy-Golikov_java-project-99&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Vitaliy-Golikov_java-project-99)
 
 # Менеджер задач
 

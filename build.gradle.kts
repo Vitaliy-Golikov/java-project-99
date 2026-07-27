@@ -97,3 +97,10 @@ tasks.withType<Test> {
 application {
 	mainClass = "hexlet.code.AppApplication"
 }
+
+sonar {
+	properties {
+		property("sonar.projectKey", "Vitaliy-Golikov_java-project-99")
+		property("sonar.organization", "vitaliy-golikov")
+	}
+}
