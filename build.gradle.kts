@@ -9,9 +9,9 @@ plugins {
 	application
 	jacoco
 	id("com.github.ben-manes.versions") version "0.52.0"
-	id("org.sonarqube") version "7.2.2.6593"
+	id("org.sonarqube") version "7.3.1.8318"
 	id("io.freefair.lombok") version "8.14"
-	id("io.sentry.jvm.gradle") version "6.1.0"
+	id("io.sentry.jvm.gradle") version "6.16.0"
 }
 
 group = "hexlet.code"
@@ -50,20 +50,15 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.33.0")
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.47.0")
 }
 
 
 //sentry {
-//	// Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
-//	// This enables source context, allowing you to see your source
-//	// code as part of your stack traces in Sentry.
-//	includeSourceContext = true
-//	autoUploadSourceContext = false
-//
-//	org = "lolly-3r"
-//	projectName = "java-spring-boot2"
-//	authToken = System.getenv("SENTRY_AUTH_TOKEN")
+//	includeSourceContext.set(true)
+//	org.set("hexlet-777")
+//	projectName.set("java-spring-boot")
+//	authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
 //}
 
 sentry {

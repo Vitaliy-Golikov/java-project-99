@@ -1,8 +1,11 @@
 spring:
+  application:
+    name: java-project-99
+
   datasource:
-    url: jdbc:postgresql://dpg-d5dr4kq4d50c73fe0t4g-a:5432/prddb_844g
-    username: user
-    password: sUJO6InU3oslmbmy92PGchXdm8NYNVxO
+    url: jdbc:postgresql://dpg-d99u36v7f7vs73bch9jg-a.frankfurt-postgres.render.com:5432/java_project_db_mcmo
+    username: java_project_db_mcmo_user
+    password: 5hqaAFlvsBxMNXZp1OrjDYOtYps7EWw0
     driver-class-name: org.postgresql.Driver
 
   jpa:
