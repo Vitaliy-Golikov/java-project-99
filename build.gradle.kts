@@ -18,11 +18,7 @@ group = "hexlet.code"
 version = "0.0.1-SNAPSHOT"
 description = "Task Manager for Spring Boot"
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
-}
+
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
