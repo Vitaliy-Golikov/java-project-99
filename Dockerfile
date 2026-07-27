@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN gradle installDist
+RUN chmod +x gradlew
+RUN ./gradlew build
 
-CMD ./build/install/java-project-99/bin/java-project-99
+CMD ["java", "-jar", "/app/build/libs/*.jar"]
