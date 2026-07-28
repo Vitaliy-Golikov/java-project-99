@@ -29,8 +29,10 @@ public class ModelGenerator {
         return Instancio.of(TaskStatus.class)
                 .ignore(Select.field(TaskStatus::getId))
                 .ignore(Select.field(TaskStatus::getCreatedAt))
-                .supply(Select.field(TaskStatus::getName), () -> FAKER.lorem().word())
-                .supply(Select.field(TaskStatus::getSlug), () -> FAKER.lorem().word() + "-" + FAKER.number().digits(6))
+                .supply(Select.field(TaskStatus::getName),
+                        () -> FAKER.lorem().word() + "-" + FAKER.number().digits(4)) // добавлен суффикс
+                .supply(Select.field(TaskStatus::getSlug),
+                        () -> FAKER.lorem().word() + "-" + FAKER.number().digits(6))
                 .create();
     }
 
@@ -59,5 +61,4 @@ public class ModelGenerator {
                 })
                 .create();
     }
-
 }
