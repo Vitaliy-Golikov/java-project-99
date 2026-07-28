@@ -24,9 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,8 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
-@Rollback
 public class TaskControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -73,7 +69,9 @@ public class TaskControllerTest {
     private ObjectMapper om;
 
     private Task testTask;
+
     private TaskStatus testTaskStatus;
+
     private User testUser;
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
 
@@ -81,18 +79,14 @@ public class TaskControllerTest {
     public void setUp() {
         taskRepository.deleteAll();
         taskStatusRepository.deleteAll();
-        labelRepository.deleteAll();
         userRepository.deleteAll();
 
         testUser = ModelGenerator.generateUser();
+
         userRepository.save(testUser);
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
 
-        // Создаем статус с уникальным именем
         testTaskStatus = ModelGenerator.generateTaskStatus();
-        String uniqueName = "test_status_" + System.currentTimeMillis();
-        testTaskStatus.setName(uniqueName);
-        testTaskStatus.setSlug(uniqueName + "_slug");
         taskStatusRepository.save(testTaskStatus);
 
         testTask = ModelGenerator.generateTask();
@@ -101,15 +95,159 @@ public class TaskControllerTest {
         taskRepository.save(testTask);
     }
 
-    // ... остальные тесты ...
+    @Test
+    public void testIndex() throws Exception {
+        var result = mockMvc.perform(get("/api/tasks").with(token))
+                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+
+        var body = result.getResponse().getContentAsString();
+        List<TaskDTO> taskDTOs = om.readValue(body, new TypeReference<>() { });
+
+        var actual = taskDTOs.stream()
+                .map(t -> taskMapper.map(t))
+                .toList();
+        var expected = taskRepository.findAll();
+
+        log.info("testIndex:expected {}", expected);
+        log.info("testIndex:actual {}", actual);
+
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    public void testShow() throws Exception {
+        var result = mockMvc.perform(get("/api/tasks/" + testTask.getId()).with(token))
+                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(status().isOk())
+                .andReturn();
+        var body = result.getResponse().getContentAsString();
+
+        log.info("\ntestShow:testTask {}", testTask);
+        log.info("\ntestShow:body {}", body);
+
+        assertThatJson(body).and(
+                json -> json.node("id").isEqualTo(testTask.getId()),
+                json -> json.node("index").isEqualTo(testTask.getIndex()),
+                json -> json.node("title").isEqualTo(testTask.getName()),
+                json -> json.node("assignee_id").isEqualTo(testTask.getAssignee().getId()),
+                json -> json.node("status").isEqualTo(testTask.getTaskStatus().getSlug())
+        );
+    }
+
+    @Test
+    public void testNotFoundResource() throws Exception {
+        var request = get("/api/tasks/" + 9999).with(token);
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testCreate() throws Exception {
+        var taskData = ModelGenerator.generateTask();
+        taskData.setTaskStatus(testTaskStatus);
+        //taskData.setAssignee(testUser);
+
+        var taskDTO = taskMapper.map(taskData);
+
+        var request = post("/api/tasks").with(token)
+                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                .content(om.writeValueAsString(taskDTO));
+
+        log.info("\ntestCreate:taskDTO.assignee {}", taskDTO.getAssigneeId());
+
+        var response = mockMvc.perform(request)
+                            .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                            .andExpect(status().isCreated());
+
+        log.info("\ntestCreate:response {}", response);
+
+        var task = taskRepository.findByName(taskData.getName()).orElse(null);
+
+        assertNotNull(task);
+        assertThat(task.getName()).isEqualTo(taskData.getName());
+        assertThat(task.getIndex()).isEqualTo(taskData.getIndex());
+        assertThat(task.getAssignee()).isEqualTo(taskData.getAssignee());
+        assertThat(task.getTaskStatus()).isEqualTo(taskData.getTaskStatus());
+    }
+
+    @Test
+    public void testCreateWithNonExistingUser() throws Exception {
+
+        var dto = new TaskCreateDTO();
+        dto.setTitle("task");
+        dto.setIndex(1);
+        dto.setStatus(testTaskStatus.getSlug());
+        dto.setAssigneeId(99999L);
+
+        var request = post("/api/tasks").with(token)
+                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                .content(om.writeValueAsString(dto));
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testDestroy() throws Exception {
+        var request = delete("/api/tasks/" + testTask.getId()).with(token);
+
+        assertTrue(taskRepository.existsById(testTask.getId()));
+        mockMvc.perform(request).andExpect(status().isNoContent());
+        assertFalse(taskRepository.existsById(testTask.getId()));
+    }
+
+    @Test
+    public void testUpdateTitle() throws Exception {
+        var data = new HashMap<>();
+        data.put("title", "New Task's title");
+
+        var taskId = testTask.getId();
+
+        var request = put("/api/tasks/" + taskId).with(token)
+                .contentType((String.valueOf(MediaType.APPLICATION_JSON)))
+                .content(om.writeValueAsString(data));
+
+        mockMvc.perform(request)
+                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(status().isOk());
+
+        var updTaskStatus = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task with id: " + taskId + " does not exist!"));
+        assertThat(updTaskStatus.getName()).isEqualTo("New Task's title");
+
+    }
+
+    @Test
+    public void testUpdateAssignee() throws Exception {
+
+        var anotherUser = ModelGenerator.generateUser();
+
+        userRepository.save(anotherUser);
+
+        var dto = new TaskUpdateDTO();
+        dto.setAssigneeId(JsonNullable.of(anotherUser.getId()));
+
+        mockMvc.perform(put("/api/tasks/" + testTask.getId())
+                        .with(token)
+                        .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                        .content(om.writeValueAsString(dto)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        var updated = taskRepository.findById(testTask.getId()).orElseThrow();
+
+        assertThat(updated.getAssignee().getId())
+                .isEqualTo(anotherUser.getId());
+    }
 
     @Test
     public void testUpdateStatus() throws Exception {
-        // Создаем статус с уникальным именем
+
         var newStatus = ModelGenerator.generateTaskStatus();
-        String uniqueName = "status_" + System.currentTimeMillis();
-        newStatus.setName(uniqueName);
-        newStatus.setSlug(uniqueName + "_slug");
         taskStatusRepository.save(newStatus);
 
         var data = new HashMap<>();
@@ -122,17 +260,64 @@ public class TaskControllerTest {
                 .andExpect(status().isOk());
 
         var updated = taskRepository.findById(testTask.getId()).orElseThrow();
+
         assertThat(updated.getTaskStatus().getSlug())
                 .isEqualTo(newStatus.getSlug());
     }
 
     @Test
+    public void testFilterByTitleContains() throws Exception {
+        var matchedTask = ModelGenerator.generateTask();
+        matchedTask.setName("create task");
+        matchedTask.setTaskStatus(testTaskStatus);
+        matchedTask.setAssignee(testUser);
+        taskRepository.save(matchedTask);
+
+        var notMatchedTask = ModelGenerator.generateTask();
+        notMatchedTask.setName("another title");
+        notMatchedTask.setTaskStatus(testTaskStatus);
+        notMatchedTask.setAssignee(testUser);
+        taskRepository.save(notMatchedTask);
+
+        var result = mockMvc.perform(get("/api/tasks")
+                                .param("titleCont", "create").with(token))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+        List<TaskDTO> tasks = om.readValue(body, new TypeReference<>() { });
+
+        assertThat(tasks)
+                .extracting(TaskDTO::getId)
+                .contains(matchedTask.getId())
+                .doesNotContain(notMatchedTask.getId());
+    }
+
+    @Test
+    public void testFilterByLabel() throws Exception {
+        var label = ModelGenerator.generateLabel();
+
+        labelRepository.save(label);
+
+        testTask.setLabels(List.of(label));
+        taskRepository.save(testTask);
+
+        var result = mockMvc.perform(get("/api/tasks")
+                                .param("labelId", String.valueOf(label.getId())).with(token))
+                                .andExpect(status().isOk())
+                                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+        List<TaskDTO> tasks = om.readValue(body, new TypeReference<>() { });
+
+        assertThat(tasks)
+                .extracting(TaskDTO::getId)
+                .contains(testTask.getId());
+    }
+
+    @Test
     public void testFilterByStatus() throws Exception {
-        // Создаем статус с уникальным именем
         var anotherStatus = ModelGenerator.generateTaskStatus();
-        String uniqueName = "filter_status_" + System.currentTimeMillis();
-        anotherStatus.setName(uniqueName);
-        anotherStatus.setSlug(uniqueName + "_slug");
         taskStatusRepository.save(anotherStatus);
 
         var taskWithAnotherStatus = ModelGenerator.generateTask();
@@ -141,9 +326,9 @@ public class TaskControllerTest {
         taskRepository.save(taskWithAnotherStatus);
 
         var result = mockMvc.perform(get("/api/tasks")
-                        .param("status", testTaskStatus.getSlug()).with(token))
-                .andExpect(status().isOk())
-                .andReturn();
+                                .param("status", testTaskStatus.getSlug()).with(token))
+                                .andExpect(status().isOk())
+                                .andReturn();
 
         var body = result.getResponse().getContentAsString();
         List<TaskDTO> tasks = om.readValue(body, new TypeReference<>() { });
@@ -153,5 +338,28 @@ public class TaskControllerTest {
                 .containsOnly(testTaskStatus.getSlug());
     }
 
-    // ... остальные тесты ...
+    @Test
+    public void testFilterByAssignee() throws Exception {
+        var anotherUser = ModelGenerator.generateUser();
+
+        userRepository.save(anotherUser);
+
+        var taskForAnotherUser = ModelGenerator.generateTask();
+        taskForAnotherUser.setAssignee(anotherUser);
+        taskForAnotherUser.setTaskStatus(testTaskStatus);
+        taskRepository.save(taskForAnotherUser);
+
+        var result = mockMvc.perform(get("/api/tasks")
+                                .param("assigneeId", String.valueOf(testUser.getId())).with(token))
+                                .andExpect(status().isOk())
+                                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+        List<TaskDTO> tasks = om.readValue(body, new TypeReference<>() { });
+
+        assertThat(tasks)
+                .extracting(TaskDTO::getAssigneeId)
+                .containsOnly(testUser.getId());
+    }
+
 }
