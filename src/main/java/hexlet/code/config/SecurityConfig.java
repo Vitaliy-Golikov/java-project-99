@@ -1,7 +1,10 @@
 package hexlet.code.config;
 
+import hexlet.code.component.RsaKeyProperties;
 import hexlet.code.service.CustomUserDetailsService;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,8 +34,28 @@ public class SecurityConfig {
     @Autowired
     private JwtDecoder jwtDecoder;
 
+    @Autowired
+    private RsaKeyProperties rsaKeys;
+
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
+
+    @PostConstruct
+    public void init() {
+        System.out.println("=== SECURITY CONFIG INIT ===");
+        System.out.println("Active profile: " + activeProfile);
+        System.out.println("UserService: " + (userService != null ? "PRESENT" : "NULL"));
+        System.out.println("PasswordEncoder: " + (passwordEncoder != null ? "PRESENT" : "NULL"));
+        System.out.println("JwtDecoder: " + (jwtDecoder != null ? "PRESENT" : "NULL"));
+        System.out.println("RsaKeyProperties: " + (rsaKeys != null ? "PRESENT" : "NULL"));
+        System.out.println("============================");
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("=== Creating SecurityFilterChain ===");
+        System.out.println("JwtDecoder in filter: " + (jwtDecoder != null ? "PRESENT" : "NULL"));
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
@@ -50,21 +73,27 @@ public class SecurityConfig {
                 .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
                 .httpBasic(Customizer.withDefaults());
 
+        System.out.println("=== SecurityFilterChain created ===");
         return http.build();
     }
 
-    // ИСПРАВЛЕНО: используем AuthenticationConfiguration
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        System.out.println("=== Creating AuthenticationManager ===");
         return config.getAuthenticationManager();
     }
 
-    // ИСПРАВЛЕНО: убрал AuthenticationManagerBuilder, он не нужен
     @Bean
     public AuthenticationProvider daoAuthProvider() {
+        System.out.println("=== Creating DaoAuthenticationProvider ===");
+        System.out.println("UserService: " + (userService != null ? "PRESENT" : "NULL"));
+        System.out.println("PasswordEncoder: " + (passwordEncoder != null ? "PRESENT" : "NULL"));
+
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userService);
         provider.setPasswordEncoder(passwordEncoder);
+
+        System.out.println("=== DaoAuthenticationProvider created ===");
         return provider;
     }
 }

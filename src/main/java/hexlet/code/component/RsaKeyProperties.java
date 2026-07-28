@@ -1,5 +1,6 @@
 package hexlet.code.component;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,4 +16,12 @@ import java.security.interfaces.RSAPublicKey;
 public class RsaKeyProperties {
     private RSAPublicKey publicKey;
     private RSAPrivateKey privateKey;
+
+    @PostConstruct
+    public void init() {
+        System.out.println("=== RSA Keys loading ===");
+        System.out.println("Public key: " + (publicKey != null ? "PRESENT (" + publicKey.getAlgorithm() + ")" : "NULL"));
+        System.out.println("Private key: " + (privateKey != null ? "PRESENT (" + privateKey.getAlgorithm() + ")" : "NULL"));
+        System.out.println("========================");
+    }
 }
