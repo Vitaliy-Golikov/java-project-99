@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -81,18 +79,5 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         System.out.println("=== Creating AuthenticationManager ===");
         return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public AuthenticationProvider daoAuthProvider() {
-        System.out.println("=== Creating DaoAuthenticationProvider ===");
-        System.out.println("UserService: " + (userService != null ? "PRESENT" : "NULL"));
-        System.out.println("PasswordEncoder: " + (passwordEncoder != null ? "PRESENT" : "NULL"));
-
-        // Используем конструктор с параметрами
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService, passwordEncoder);
-
-        System.out.println("=== DaoAuthenticationProvider created ===");
-        return provider;
     }
 }
