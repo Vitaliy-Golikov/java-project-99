@@ -89,9 +89,8 @@ public class SecurityConfig {
         System.out.println("UserService: " + (userService != null ? "PRESENT" : "NULL"));
         System.out.println("PasswordEncoder: " + (passwordEncoder != null ? "PRESENT" : "NULL"));
 
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userService);
-        provider.setPasswordEncoder(passwordEncoder);
+        // Используем конструктор с параметрами
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService, passwordEncoder);
 
         System.out.println("=== DaoAuthenticationProvider created ===");
         return provider;
