@@ -46,7 +46,6 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.33.0")
 }
 
 
