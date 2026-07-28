@@ -2,7 +2,7 @@ repositories {
 	mavenCentral()
 }
 
-plugins {
+0plugins {
 	id("org.springframework.boot") version "3.4.5"
 	id("io.spring.dependency-management") version "1.1.7"
 
@@ -11,7 +11,6 @@ plugins {
 	id("com.github.ben-manes.versions") version "0.52.0"
 	id("org.sonarqube") version "7.3.1.8318"
 	id("io.freefair.lombok") version "8.14"
-	id("io.sentry.jvm.gradle") version "6.1.0"
 }
 
 group = "hexlet.code"
@@ -46,25 +45,6 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
-}
-
-
-//sentry {
-//	includeSourceContext.set(true)
-//	org.set("hexlet-777")
-//	projectName.set("java-spring-boot")
-//	authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
-//}
-
-sentry {
-	includeSourceContext = true
-	org = "hexlet-777"
-	projectName = "java-spring-boot"
-	authToken = System.getenv("SENTRY_AUTH_TOKEN")
-}
-
-tasks.sentryBundleSourcesJava {
-	enabled = System.getenv("SENTRY_AUTH_TOKEN") != null
 }
 
 tasks.test {
