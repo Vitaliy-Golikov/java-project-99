@@ -11,7 +11,7 @@ plugins {
 	id("com.github.ben-manes.versions") version "0.52.0"
 	id("org.sonarqube") version "7.3.1.8318"
 	id("io.freefair.lombok") version "8.14"
-	id("io.sentry.jvm.gradle") version "6.1.0"
+	id("io.sentry.jvm.gradle") version "7.5.0"
 }
 
 group = "hexlet.code"
@@ -46,7 +46,7 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.33.0")
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta:7.5.0")
 }
 
 
