@@ -1,10 +1,9 @@
 FROM gradle:8.7-jdk21
 
-WORKDIR /app
+WORKDIR /
 
-COPY . .
+COPY / .
 
-RUN chmod +x gradlew
-RUN ./gradlew build
+RUN gradle installDist
 
-CMD ["java", "-jar", "/app/build/libs/*.jar"]
+CMD ./build/install/app/bin/app
