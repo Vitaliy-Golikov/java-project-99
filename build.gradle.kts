@@ -46,7 +46,7 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.47.0")
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.50.1")
 }
 
 
@@ -56,13 +56,6 @@ dependencies {
 //	projectName.set("java-spring-boot")
 //	authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
 //}
-
-sentry {
-	includeSourceContext = true
-	org = "hexlet-777"
-	projectName = "java-spring-boot"
-	authToken = System.getenv("SENTRY_AUTH_TOKEN")
-}
 
 tasks.sentryBundleSourcesJava {
 	enabled = System.getenv("SENTRY_AUTH_TOKEN") != null
