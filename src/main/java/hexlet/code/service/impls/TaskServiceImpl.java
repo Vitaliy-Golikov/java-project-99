@@ -81,10 +81,12 @@ public class TaskServiceImpl implements TaskService {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id: " + id + " does not exist!"));
 
-        // Обновляем простые поля через маппер
         taskMapper.update(taskData, task);
 
-        // Обработка assigneeId
+        if (taskData.getContent() != null && taskData.getContent().isPresent()) {
+            task.setDescription(taskData.getContent().get());
+        }
+
         if (taskData.getAssigneeId() != null && taskData.getAssigneeId().isPresent()) {
             Long assigneeId = taskData.getAssigneeId().get();
             if (assigneeId != null) {
@@ -97,7 +99,6 @@ public class TaskServiceImpl implements TaskService {
             }
         }
 
-        // Обработка статуса
         if (taskData.getStatus() != null && taskData.getStatus().isPresent()) {
             String statusSlug = taskData.getStatus().get();
             if (statusSlug != null && !statusSlug.isBlank()) {
@@ -110,7 +111,6 @@ public class TaskServiceImpl implements TaskService {
             }
         }
 
-        // Обработка labels
         if (taskData.getTaskLabelIds() != null && taskData.getTaskLabelIds().isPresent()) {
             var labelIds = taskData.getTaskLabelIds().get();
             if (labelIds != null && !labelIds.isEmpty()) {
