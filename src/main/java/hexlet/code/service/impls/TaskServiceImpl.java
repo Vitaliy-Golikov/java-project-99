@@ -81,10 +81,16 @@ public class TaskServiceImpl implements TaskService {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id: " + id + " does not exist!"));
 
-        taskMapper.update(taskData, task);
+        if (taskData.getTitle() != null && taskData.getTitle().isPresent()) {
+            task.setName(taskData.getTitle().get());
+        }
 
         if (taskData.getContent() != null && taskData.getContent().isPresent()) {
             task.setDescription(taskData.getContent().get());
+        }
+
+        if (taskData.getIndex() != null && taskData.getIndex().isPresent()) {
+            task.setIndex(taskData.getIndex().get());
         }
 
         if (taskData.getAssigneeId() != null && taskData.getAssigneeId().isPresent()) {
