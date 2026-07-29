@@ -38,3 +38,16 @@
 
 **Сборка**
 - Gradle
+
+## Запуск
+
+```
+http://localhost:8080
+
+username: hexlet@example.com
+password: qwerty
+```
+
+## Демо
+
+[Task Manager](https://java-project-99-i7gd.onrender.com)
