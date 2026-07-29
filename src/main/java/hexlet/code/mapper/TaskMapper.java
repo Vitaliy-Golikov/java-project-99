@@ -9,16 +9,18 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(
         uses = { JsonNullableMapper.class },
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         componentModel = MappingConstants.ComponentModel.SPRING,
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public abstract class TaskMapper {
+
     @Mapping(source = "createdAt", target = "createdAt", dateFormat = "yyyy-MM-dd")
     @Mapping(source = "name", target = "title")
     @Mapping(source = "description", target = "content")
@@ -52,4 +54,10 @@ public abstract class TaskMapper {
         return label.getId();
     }
 
+    protected Set<Long> map(Set<Label> labels) {
+        if (labels == null) {
+            return null;
+        }
+        return labels.stream().map(Label::getId).collect(Collectors.toSet());
+    }
 }

@@ -19,7 +19,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "task_statuses")
@@ -44,8 +45,8 @@ public class TaskStatus {
     @Column(unique = true)
     private String slug;
 
-    @OneToMany(mappedBy = "taskStatus") //cascade = CascadeType.REMOVE, orphanRemoval = true
-    private List<Task> tasks;
+    @OneToMany(mappedBy = "taskStatus")
+    private Set<Task> tasks = new HashSet<>();
 
     @CreatedDate
     private LocalDate createdAt;

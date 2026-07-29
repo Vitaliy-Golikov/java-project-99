@@ -2,6 +2,7 @@ package hexlet.code.controller.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
@@ -33,7 +34,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 public class UsersControllerTest {
@@ -61,7 +61,6 @@ public class UsersControllerTest {
         userRepository.deleteAll();
 
         testUser = ModelGenerator.generateUser();
-
         userRepository.save(testUser);
 
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
@@ -70,13 +69,13 @@ public class UsersControllerTest {
     @Test
     public void testIndex() throws Exception {
         var result = mockMvc.perform(get("/api/users").with(token))
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
         var body = result.getResponse().getContentAsString();
 
-        List<UserDTO> userDTOs = om.readValue(body, new TypeReference<>() { });
+        List<UserDTO> userDTOs = om.readValue(body, new TypeReference<>() {});
         var actual = userDTOs.stream()
                 .map(userDTO -> userMapper.map(userDTO))
                 .toList();
@@ -88,7 +87,7 @@ public class UsersControllerTest {
     @Test
     public void testShow() throws Exception {
         var result = mockMvc.perform(get("/api/users/" + testUser.getId()).with(token))
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -104,22 +103,50 @@ public class UsersControllerTest {
 
     @Test
     public void testCreate() throws Exception {
-        var userData = ModelGenerator.generateUser();
-        var request = post("/api/users").with(token)
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+        var userData = new UserCreateDTO();
+        userData.setEmail("test@example.com");
+        userData.setFirstName("Test");
+        userData.setLastName("User");
+        userData.setPassword("password123");
+
+        var request = post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(userData));
 
+        mockMvc.perform(request)
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void testCreateWithInvalidEmail() throws Exception {
+        var userData = new UserCreateDTO();
+        userData.setEmail("invalid-email");
+        userData.setFirstName("Test");
+        userData.setLastName("User");
+        userData.setPassword("password123");
+
+        var request = post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(userData));
 
         mockMvc.perform(request)
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isBadRequest());
+    }
 
-        var user = userRepository.findByEmail(userData.getEmail()).orElse(null);
+    @Test
+    public void testCreateWithBlankFields() throws Exception {
+        var userData = new UserCreateDTO();
+        userData.setEmail("test@example.com");
+        userData.setFirstName("");
+        userData.setLastName("User");
+        userData.setPassword("password123");
 
-        assertNotNull(user);
-        assertThat(user.getFirstName()).isEqualTo(userData.getFirstName());
-        assertThat(user.getLastName()).isEqualTo(userData.getLastName());
+        var request = post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(userData));
 
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -133,21 +160,56 @@ public class UsersControllerTest {
     }
 
     @Test
+    public void testDestroyAnotherUser() throws Exception {
+        var anotherUser = ModelGenerator.generateUser();
+        userRepository.save(anotherUser);
+
+        mockMvc.perform(delete("/api/users/" + anotherUser.getId()).with(token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void testUpdate() throws Exception {
         var data = new HashMap<>();
         data.put("firstName", "Lolly");
 
         var request = put("/api/users/" + testUser.getId()).with(token)
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
-
 
         mockMvc.perform(request)
                 .andExpect(status().isOk());
 
         var updatedUser = userRepository.findById(testUser.getId()).orElseThrow();
-
         assertThat(updatedUser.getFirstName()).isEqualTo("Lolly");
     }
 
+    @Test
+    public void testUpdateAnotherUser() throws Exception {
+        var anotherUser = ModelGenerator.generateUser();
+        userRepository.save(anotherUser);
+
+        var data = new HashMap<>();
+        data.put("firstName", "Hacker");
+
+        var request = put("/api/users/" + anotherUser.getId()).with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(data));
+
+        mockMvc.perform(request)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testUpdateWithInvalidEmail() throws Exception {
+        var data = new HashMap<>();
+        data.put("email", "invalid-email");
+
+        var request = put("/api/users/" + testUser.getId()).with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(data));
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
+    }
 }

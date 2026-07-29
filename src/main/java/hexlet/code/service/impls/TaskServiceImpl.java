@@ -15,10 +15,11 @@ import hexlet.code.service.interfaces.TaskService;
 import hexlet.code.specification.TaskSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -31,12 +32,14 @@ public class TaskServiceImpl implements TaskService {
     private final TaskMapper taskMapper;
     private final TaskSpecification specBuilder;
 
+    @Override
     public TaskDTO getTaskById(Long id) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id: " + id + " does not exist!"));
         return taskMapper.map(task);
     }
 
+    @Override
     public List<TaskDTO> getAllTasks(TaskParamsDTO params) {
         var spec = specBuilder.build(params);
         var tasks = taskRepository.findAll(spec);
@@ -45,6 +48,8 @@ public class TaskServiceImpl implements TaskService {
                 .toList();
     }
 
+    @Override
+    @Transactional
     public TaskDTO createTask(TaskCreateDTO taskData) {
         var assigneeId = taskData.getAssigneeId();
         var slug = taskData.getStatus();
@@ -70,57 +75,65 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.map(task);
     }
 
+    @Override
+    @Transactional
     public TaskDTO updateTask(TaskUpdateDTO taskData, Long id) {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id: " + id + " does not exist!"));
 
-        if (taskData.getAssigneeId() != null) {
-            Long assigneeId = taskData.getAssigneeId().orElse(null);
+        // Обновляем простые поля через маппер
+        taskMapper.update(taskData, task);
+
+        // Обработка assigneeId
+        if (taskData.getAssigneeId() != null && taskData.getAssigneeId().isPresent()) {
+            Long assigneeId = taskData.getAssigneeId().get();
             if (assigneeId != null) {
                 var user = userRepository.findById(assigneeId)
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "User with id: " + assigneeId + " does not exist!"));
                 task.setAssignee(user);
-            } else if (taskData.getAssigneeId().isPresent()) {
+            } else {
                 task.setAssignee(null);
             }
         }
 
-        if (taskData.getStatus() != null) {
-            String statusSlug = taskData.getStatus().orElse(null);
-            if (statusSlug != null) {
+        // Обработка статуса
+        if (taskData.getStatus() != null && taskData.getStatus().isPresent()) {
+            String statusSlug = taskData.getStatus().get();
+            if (statusSlug != null && !statusSlug.isBlank()) {
                 var status = taskStatusRepository.findBySlug(statusSlug)
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Task status with slug: " + statusSlug + " does not exist!"));
                 task.setTaskStatus(status);
+            } else {
+                task.setTaskStatus(null);
             }
         }
 
-        if (taskData.getTaskLabelIds() != null) {
-            var labelIds = taskData.getTaskLabelIds().orElse(null);
-            if (labelIds != null) {
+        // Обработка labels
+        if (taskData.getTaskLabelIds() != null && taskData.getTaskLabelIds().isPresent()) {
+            var labelIds = taskData.getTaskLabelIds().get();
+            if (labelIds != null && !labelIds.isEmpty()) {
                 task.setLabels(getLabelsByIds(labelIds));
-            } else if (taskData.getTaskLabelIds().isPresent()) {
-                task.setLabels(null);
+            } else {
+                task.setLabels(new HashSet<>());
             }
         }
 
-        taskMapper.update(taskData, task);
         taskRepository.save(task);
         return taskMapper.map(task);
     }
 
+    @Override
+    @Transactional
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
 
-    private List<Label> getLabelsByIds(List<Long> labelIds) {
+    private Set<Label> getLabelsByIds(List<Long> labelIds) {
         if (labelIds == null || labelIds.isEmpty()) {
-            return Collections.emptyList();
+            return new HashSet<>();
         }
-        Iterable<Label> labelsIterable = labelRepository.findAllById(labelIds);
-        List<Label> labels = new ArrayList<>();
-        labelsIterable.forEach(labels::add);
-        return labels;
+        return new HashSet<>(labelRepository.findAllById(labelIds));
     }
 }

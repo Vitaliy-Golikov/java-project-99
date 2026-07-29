@@ -1,9 +1,16 @@
-FROM gradle:8.7-jdk21
-
+# Этап 1: сборка (build)
+FROM openjdk:21-jdk-slim AS build
 WORKDIR /app
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+RUN ./gradlew dependencies --no-daemon
+COPY src src
+RUN ./gradlew bootJar --no-daemon
 
-COPY . .
-
-RUN gradle installDist
-
-CMD ./build/install/java-project-99/bin/java-project-99
+# Этап 2: запуск (runtime)
+FROM openjdk:21-jre-slim
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

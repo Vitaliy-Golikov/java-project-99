@@ -2,6 +2,7 @@ package hexlet.code.controller.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hexlet.code.dto.TaskStatusCreateDTO;
 import hexlet.code.dto.TaskStatusDTO;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.model.TaskStatus;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -60,7 +61,6 @@ public class TaskStatusesControllerTest {
     private ObjectMapper om;
 
     private TaskStatus testTaskStatus;
-
     private User testUser;
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
 
@@ -74,7 +74,6 @@ public class TaskStatusesControllerTest {
         taskStatusRepository.save(testTaskStatus);
 
         testUser = ModelGenerator.generateUser();
-
         userRepository.save(testUser);
 
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
@@ -83,13 +82,12 @@ public class TaskStatusesControllerTest {
     @Test
     public void testIndex() throws Exception {
         var result = mockMvc.perform(get("/api/task_statuses").with(token))
-                            .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
-                            .andExpect(status().isOk())
-                            .andReturn();
-
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
 
         var body = result.getResponse().getContentAsString();
-        List<TaskStatusDTO> taskStatusDTOs = om.readValue(body, new TypeReference<>() { });
+        List<TaskStatusDTO> taskStatusDTOs = om.readValue(body, new TypeReference<>() {});
 
         var actual = taskStatusDTOs.stream()
                 .map(t -> taskStatusMapper.map(t))
@@ -105,9 +103,9 @@ public class TaskStatusesControllerTest {
     @Test
     public void testShow() throws Exception {
         var result = mockMvc.perform(get("/api/task_statuses/" + testTaskStatus.getId()).with(token))
-                        .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
-                        .andExpect(status().isOk())
-                        .andReturn();
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
         var body = result.getResponse().getContentAsString();
 
         assertThatJson(body).and(
@@ -127,14 +125,16 @@ public class TaskStatusesControllerTest {
 
     @Test
     public void testCreate() throws Exception {
-        var taskStatusData = taskStatusMapper.map(ModelGenerator.generateTaskStatus());
+        var taskStatusData = new TaskStatusCreateDTO();
+        taskStatusData.setName("New Status");
+        taskStatusData.setSlug("new-status");
 
         var request = post("/api/task_statuses").with(token)
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(taskStatusData));
 
         mockMvc.perform(request)
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
         var taskStatus = taskStatusRepository.findByName(taskStatusData.getName()).orElse(null);
@@ -142,6 +142,20 @@ public class TaskStatusesControllerTest {
         assertNotNull(taskStatus);
         assertThat(taskStatus.getName()).isEqualTo(taskStatusData.getName());
         assertThat(taskStatus.getSlug()).isEqualTo(taskStatusData.getSlug());
+    }
+
+    @Test
+    public void testCreateWithInvalidData() throws Exception {
+        var taskStatusData = new TaskStatusCreateDTO();
+        taskStatusData.setName(""); // пустое имя
+        taskStatusData.setSlug("new-status");
+
+        var request = post("/api/task_statuses").with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(taskStatusData));
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -161,16 +175,33 @@ public class TaskStatusesControllerTest {
         var taskStatusId = testTaskStatus.getId();
 
         var request = put("/api/task_statuses/" + taskStatusId).with(token)
-                .contentType((String.valueOf(MediaType.APPLICATION_JSON)))
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
 
         mockMvc.perform(request)
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        var updTaskStatus = taskStatusRepository.findByName(testTaskStatus.getName()).orElseThrow();
+        var updTaskStatus = taskStatusRepository.findById(taskStatusId).orElseThrow();
         assertThat(updTaskStatus.getSlug()).isEqualTo("in-process");
-
     }
 
+    @Test
+    public void testUpdateWithNullValue() throws Exception {
+        var data = new HashMap<>();
+        data.put("name", null);
+        data.put("slug", null);
+
+        var request = put("/api/task_statuses/" + testTaskStatus.getId()).with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(data));
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk());
+
+        var updTaskStatus = taskStatusRepository.findById(testTaskStatus.getId()).orElseThrow();
+        // Значения не должны измениться, так как null игнорируется
+        assertThat(updTaskStatus.getName()).isEqualTo(testTaskStatus.getName());
+        assertThat(updTaskStatus.getSlug()).isEqualTo(testTaskStatus.getSlug());
+    }
 }

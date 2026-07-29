@@ -9,6 +9,9 @@ import org.instancio.Instancio;
 import org.instancio.Select;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Component
 public class ModelGenerator {
     private static final Faker FAKER = new Faker();
@@ -18,10 +21,15 @@ public class ModelGenerator {
                 .ignore(Select.field(User::getId))
                 .ignore(Select.field(User::getCreatedAt))
                 .ignore(Select.field(User::getUpdatedAt))
+                .ignore(Select.field(User::getTasks))
                 .supply(Select.field(User::getEmail),
                         () -> FAKER.internet().emailAddress())
                 .supply(Select.field(User::getPasswordDigest),
                         () -> FAKER.internet().password(8, 16))
+                .supply(Select.field(User::getFirstName),
+                        () -> FAKER.name().firstName())
+                .supply(Select.field(User::getLastName),
+                        () -> FAKER.name().lastName())
                 .create();
     }
 
@@ -29,8 +37,9 @@ public class ModelGenerator {
         return Instancio.of(TaskStatus.class)
                 .ignore(Select.field(TaskStatus::getId))
                 .ignore(Select.field(TaskStatus::getCreatedAt))
+                .ignore(Select.field(TaskStatus::getTasks))
                 .supply(Select.field(TaskStatus::getName),
-                        () -> FAKER.lorem().word() + "-" + FAKER.number().digits(4)) // добавлен суффикс
+                        () -> FAKER.lorem().word() + "-" + FAKER.number().digits(4))
                 .supply(Select.field(TaskStatus::getSlug),
                         () -> FAKER.lorem().word() + "-" + FAKER.number().digits(6))
                 .create();
@@ -41,10 +50,10 @@ public class ModelGenerator {
                 .ignore(Select.field(Task::getId))
                 .ignore(Select.field(Task::getCreatedAt))
                 .ignore(Select.field(Task::getAssignee))
+                .ignore(Select.field(Task::getLabels))
                 .supply(Select.field(Task::getIndex), () -> FAKER.number().numberBetween(1, 100))
                 .supply(Select.field(Task::getName), () -> String.join(" ", FAKER.lorem().words(2)))
                 .supply(Select.field(Task::getDescription), () -> String.join(" ", FAKER.lorem().words(4)))
-                .ignore(Select.field(Task::getLabels))
                 .create();
     }
 
@@ -52,6 +61,7 @@ public class ModelGenerator {
         return Instancio.of(Label.class)
                 .ignore(Select.field(Label::getId))
                 .ignore(Select.field(Label::getCreatedAt))
+                .ignore(Select.field(Label::getTasks))
                 .supply(Select.field(Label::getName), () -> {
                     String word;
                     do {
@@ -60,5 +70,14 @@ public class ModelGenerator {
                     return word;
                 })
                 .create();
+    }
+
+    // Вспомогательный метод для создания Set из Labels
+    public static Set<Label> generateLabelSet(int count) {
+        Set<Label> labels = new HashSet<>();
+        for (int i = 0; i < count; i++) {
+            labels.add(generateLabel());
+        }
+        return labels;
     }
 }

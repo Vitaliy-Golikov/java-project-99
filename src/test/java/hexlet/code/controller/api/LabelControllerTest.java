@@ -2,6 +2,7 @@ package hexlet.code.controller.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hexlet.code.dto.label.LabelCreateDTO;
 import hexlet.code.dto.label.LabelDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.LabelMapper;
@@ -60,7 +61,6 @@ public class LabelControllerTest {
     private ObjectMapper om;
 
     private Label testLabel;
-
     private User testUser;
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
 
@@ -74,7 +74,6 @@ public class LabelControllerTest {
         labelRepository.save(testLabel);
 
         testUser = ModelGenerator.generateUser();
-
         userRepository.save(testUser);
 
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
@@ -83,13 +82,12 @@ public class LabelControllerTest {
     @Test
     public void testIndex() throws Exception {
         var result = mockMvc.perform(get("/api/labels").with(token))
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
-
         var body = result.getResponse().getContentAsString();
-        List<LabelDTO> labelDTOs = om.readValue(body, new TypeReference<>() { });
+        List<LabelDTO> labelDTOs = om.readValue(body, new TypeReference<>() {});
 
         var actual = labelDTOs.stream()
                 .map(l -> labelMapper.map(l))
@@ -105,7 +103,7 @@ public class LabelControllerTest {
     @Test
     public void testShow() throws Exception {
         var result = mockMvc.perform(get("/api/labels/" + testLabel.getId()).with(token))
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -127,20 +125,34 @@ public class LabelControllerTest {
 
     @Test
     public void testCreate() throws Exception {
-        var labelData = labelMapper.map(ModelGenerator.generateLabel());
+        var labelData = new LabelCreateDTO();
+        labelData.setName("New Label");
 
         var request = post("/api/labels").with(token)
-                .contentType(String.valueOf(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(labelData));
 
         mockMvc.perform(request)
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
         var label = labelRepository.findByName(labelData.getName()).orElse(null);
 
         assertNotNull(label);
         assertThat(label.getName()).isEqualTo(labelData.getName());
+    }
+
+    @Test
+    public void testCreateWithInvalidData() throws Exception {
+        var labelData = new LabelCreateDTO();
+        labelData.setName("ab"); // меньше 3 символов
+
+        var request = post("/api/labels").with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(labelData));
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -160,18 +172,29 @@ public class LabelControllerTest {
         var labelId = testLabel.getId();
 
         var request = put("/api/labels/" + labelId).with(token)
-                .contentType((String.valueOf(MediaType.APPLICATION_JSON)))
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
 
         mockMvc.perform(request)
-                .andExpect(content().contentType(String.valueOf(MediaType.APPLICATION_JSON)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         var updLabel = labelRepository.findById(labelId).orElseThrow(
                 () -> new ResourceNotFoundException("Label with id: " + labelId + " does not exist!")
         );
         assertThat(updLabel.getName()).isEqualTo("Lolly");
-
     }
 
+    @Test
+    public void testUpdateWithInvalidData() throws Exception {
+        var data = new HashMap<>();
+        data.put("name", "ab"); // меньше 3 символов
+
+        var request = put("/api/labels/" + testLabel.getId()).with(token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(data));
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest());
+    }
 }

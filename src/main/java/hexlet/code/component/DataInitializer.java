@@ -9,7 +9,7 @@ import hexlet.code.service.interfaces.LabelService;
 import hexlet.code.service.interfaces.TaskStatusService;
 import hexlet.code.service.interfaces.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -17,32 +17,27 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private TaskStatusRepository taskStatusRepositoryRepository;
-
-    @Autowired
-    private TaskStatusService taskStatusService;
-
-    @Autowired
-    private LabelService labelService;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final TaskStatusRepository taskStatusRepositoryRepository;
+    private final TaskStatusService taskStatusService;
+    private final LabelService labelService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        log.info("Starting data initialization...");
+
         var email = "hexlet@example.com";
         var userData = new UserCreateDTO();
         userData.setEmail(email);
         userData.setPassword("qwerty");
         userService.createUser(userData);
+        log.info("Created default user: {}", email);
 
         var statuses = Map.of(
                 "draft", "Draft",
@@ -58,6 +53,7 @@ public class DataInitializer implements ApplicationRunner {
             dto.setName(name);
             taskStatusService.createTaskStatus(dto);
         });
+        log.info("Created {} task statuses", statuses.size());
 
         List<String> defaultLabels = List.of("feature", "bug");
         defaultLabels.forEach(name -> {
@@ -65,5 +61,8 @@ public class DataInitializer implements ApplicationRunner {
             label.setName(name);
             labelService.createLabel(label);
         });
+        log.info("Created {} default labels", defaultLabels.size());
+
+        log.info("Data initialization completed successfully!");
     }
 }
