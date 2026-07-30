@@ -26,7 +26,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,7 +48,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Slf4j
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class TaskControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -190,11 +188,15 @@ public class TaskControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(taskData));
 
-        mockMvc.perform(request)
-                .andExpect(status().isCreated());
+        var response = mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andReturn();
 
-        var task = taskRepository.findByName(taskData.getTitle()).orElse(null);
-        assertNotNull(task);
+        var body = response.getResponse().getContentAsString();
+        var createdTask = om.readValue(body, TaskDTO.class);
+
+        // Используем findById с @EntityGraph, чтобы загрузить labels
+        var task = taskRepository.findById(createdTask.getId()).orElseThrow();
         assertThat(task.getLabels()).hasSize(2);
         assertThat(task.getLabels()).extracting("id").containsExactlyInAnyOrder(label1.getId(), label2.getId());
     }
