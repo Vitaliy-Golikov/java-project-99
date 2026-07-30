@@ -36,12 +36,19 @@ public abstract class TaskMapper {
     @Mapping(target = "labels", ignore = true)
     public abstract Task map(TaskCreateDTO taskData);
 
-    @Mapping(source = "title", target = "name")
-    @Mapping(source = "content", target = "description")
-    @Mapping(target = "assignee", ignore = true)
-    @Mapping(target = "taskStatus", ignore = true)
-    @Mapping(target = "labels", ignore = true)
-    public abstract void update(TaskUpdateDTO taskData, @MappingTarget Task task);
+    // Конкретный метод (не абстрактный, не default)
+    public void update(TaskUpdateDTO taskData, @MappingTarget Task task) {
+        if (taskData.getTitle() != null && taskData.getTitle().isPresent()) {
+            task.setName(taskData.getTitle().get());
+        }
+        if (taskData.getContent() != null && taskData.getContent().isPresent()) {
+            task.setDescription(taskData.getContent().get());
+        }
+        if (taskData.getIndex() != null && taskData.getIndex().isPresent()) {
+            task.setIndex(taskData.getIndex().get());
+        }
+        // Связи (assignee, status, labels) обновляются в сервисе
+    }
 
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "yyyy-MM-dd")
     @Mapping(target = "name", source = "title")

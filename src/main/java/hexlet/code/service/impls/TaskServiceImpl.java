@@ -81,20 +81,12 @@ public class TaskServiceImpl implements TaskService {
         var task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with id: " + id + " does not exist!"));
 
-        // Обновление простых полей
-        if (taskData.getTitle() != null && taskData.getTitle().isPresent()) {
-            task.setName(taskData.getTitle().get());
-        }
-        if (taskData.getContent() != null && taskData.getContent().isPresent()) {
-            task.setDescription(taskData.getContent().get());
-        }
-        if (taskData.getIndex() != null && taskData.getIndex().isPresent()) {
-            task.setIndex(taskData.getIndex().get());
-        }
+        // Делегируем обновление простых полей мапперу
+        taskMapper.update(taskData, task);
 
-        // Обновление assignee
+        // Ручная обработка связей (маппер не умеет сам ходить в репозитории)
         if (taskData.getAssigneeId() != null && taskData.getAssigneeId().isPresent()) {
-            Long assigneeId = taskData.getAssigneeId().get();
+            Long assigneeId = taskData.getAssigneeId().orElse(null);
             if (assigneeId != null) {
                 var user = userRepository.findById(assigneeId)
                         .orElseThrow(() -> new ResourceNotFoundException(
@@ -105,9 +97,8 @@ public class TaskServiceImpl implements TaskService {
             }
         }
 
-        // Обновление статуса
         if (taskData.getStatus() != null && taskData.getStatus().isPresent()) {
-            String statusSlug = taskData.getStatus().get();
+            String statusSlug = taskData.getStatus().orElse(null);
             if (statusSlug != null && !statusSlug.isBlank()) {
                 var status = taskStatusRepository.findBySlug(statusSlug)
                         .orElseThrow(() -> new ResourceNotFoundException(
@@ -118,9 +109,8 @@ public class TaskServiceImpl implements TaskService {
             }
         }
 
-        // Обновление меток
         if (taskData.getTaskLabelIds() != null && taskData.getTaskLabelIds().isPresent()) {
-            var labelIds = taskData.getTaskLabelIds().get();
+            var labelIds = taskData.getTaskLabelIds().orElse(null);
             if (labelIds != null && !labelIds.isEmpty()) {
                 task.setLabels(getLabelsByIds(labelIds));
             } else {
